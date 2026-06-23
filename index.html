@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 Sample Return Form</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;color:#fff;}
+    .header{background:linear-gradient(135deg,#667eea,#764ba2);padding:24px 20px;text-align:center;}
+    .header h1{font-size:1.9rem;}
+    .container{max-width:960px;margin:24px auto;padding:0 16px 40px;}
+    .status{text-align:center;padding:12px 18px;border-radius:10px;margin-bottom:18px;font-weight:500;font-size:.9rem;}
+    .ok{background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.5);color:#86efac;}
+    .error{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);color:#fca5a5;}
+    .loading{background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.5);color:#93c5fd;}
+    .card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:22px;margin-bottom:18px;backdrop-filter:blur(10px);}
+    .card h3{margin-bottom:14px;font-size:1rem;}
+    input,textarea{padding:11px 14px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:rgba(255,255,255,.1);color:#fff;outline:none;width:100%;font-family:inherit;}
+    input::placeholder,textarea::placeholder{color:rgba(255,255,255,.5);}
+    input:focus,textarea:focus{border-color:#667eea;background:rgba(255,255,255,.15);}
+    input[type=date]{color:#fff;}
+    input[type=number]{-moz-appearance:textfield;}
+    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+    .btn{padding:11px 22px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem;transition:all .2s;}
+    .btn-primary{background:#667eea;color:#fff;} .btn-primary:hover{background:#5568d3;}
+    .btn-danger{background:#dc2626;color:#fff;} .btn-danger:hover{background:#b91c1c;}
+    .btn-success{background:#16a34a;color:#fff;} .btn-success:hover{background:#15803d;}
+    .btn-sm{padding:5px 14px;font-size:.82rem;border-radius:6px;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    @media(max-width:600px){.row2{grid-template-columns:1fr;}}
+    label{display:block;margin-bottom:6px;opacity:.8;font-size:.88rem;}
+    .hidden{display:none!important;}
+    .scanner-wrap{position:relative;background:#000;border-radius:10px;overflow:hidden;height:280px;margin:12px 0;}
+    .scanner-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
+    .scan-line{position:absolute;left:8%;width:84%;height:2px;background:rgba(102,126,234,.95);box-shadow:0 0 8px #667eea,0 0 20px #667eea;animation:scanMove 2s ease-in-out infinite;pointer-events:none;z-index:2;}
+    @keyframes scanMove{0%,100%{top:18%;}50%{top:82%;}}
+    .sc{position:absolute;width:22px;height:22px;border-color:rgba(102,126,234,.95);border-style:solid;z-index:2;}
+    .tl{top:10px;left:10px;border-width:3px 0 0 3px;} .tr{top:10px;right:10px;border-width:3px 3px 0 0;}
+    .bl{bottom:10px;left:10px;border-width:0 0 3px 3px;} .br{bottom:10px;right:10px;border-width:0 3px 3px 0;}
+    .scan-badge{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#c7d2fe;font-size:.75rem;padding:4px 12px;border-radius:20px;z-index:2;white-space:nowrap;}
+    .barcode-row{display:flex;gap:10px;margin-bottom:16px;} .barcode-row input{flex:1;}
+    .picker-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 18px;}
+    .p-name{font-size:1rem;font-weight:700;color:#c7d2fe;margin-bottom:8px;min-height:20px;}
+    .p-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+    .p-tag{background:rgba(102,126,234,.3);border:1px solid rgba(102,126,234,.5);border-radius:6px;padding:3px 10px;font-size:.8rem;color:#c7d2fe;}
+    .p-label{font-size:.82rem;opacity:.55;margin-bottom:10px;min-height:14px;}
+    .pick-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .stepper{display:inline-flex;align-items:center;border:2px solid rgba(255,255,255,.4);border-radius:8px;overflow:hidden;background:rgba(0,0,0,.25);}
+    .st-btn{width:38px;height:38px;background:#667eea;color:#fff;border:none;font-size:1.3rem;font-weight:900;cursor:pointer;line-height:1;transition:background .15s;}
+    .st-btn:hover{background:#4f5fd0;} .st-btn:active{background:#3d4dbf;}
+    .st-num{width:48px;height:38px;background:transparent;color:#fff;font-size:1rem;font-weight:700;text-align:center;border:none;outline:none;padding:0;}
+    .btn-add-confirm{height:38px;padding:0 22px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;white-space:nowrap;}
+    .btn-add-confirm:hover{background:#16a34a;} .btn-add-confirm:disabled{background:#3d6647;cursor:not-allowed;opacity:.6;}
+    .table-wrap{overflow-x:auto;margin:10px 0;}
+    table{width:100%;border-collapse:collapse;min-width:680px;}
+    thead tr{background:rgba(102,126,234,.4);}
+    th{padding:11px 10px;text-align:left;font-weight:600;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.2);white-space:nowrap;}
+    td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;vertical-align:middle;}
+    tbody tr:hover{background:rgba(255,255,255,.05);}
+    .total-row td{background:rgba(102,126,234,.3);font-weight:700;}
+    .bc{font-family:monospace;color:#93c5fd;font-size:.8rem;}
+    .actions-bar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+    .actions-bar .btn{flex:1;min-width:130px;}
+    .dim{opacity:.6;font-size:.8rem;}
+  </style>
+</head>
+<body>
+<div class="header"><h1>📦 Sample Return Form</h1></div>
+<div class="container">
+  <div id="status" class="status loading">⏳ Initializing…</div>
+
+  <!-- URL Config -->
+  <div class="card">
+    <h3>⚙️ Google Apps Script URL</h3>
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <input type="text" id="apiUrl" placeholder="Paste deployed Web App URL here" style="flex:1">
+      <button class="btn btn-primary" style="white-space:nowrap" onclick="saveUrl()">💾 Save</button>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="loadProducts()">🔄 Load Products</button>
+  </div>
+
+  <!-- Form Details -->
+  <div class="card">
+    <h3>📋 Return Form Details</h3>
+    <div class="row2">
+      <div><label>Date</label><input type="date" id="returnDate"></div>
+      <div><label>Sales Person Name</label><input type="text" id="salesName" placeholder="Enter name"></div>
+    </div>
+    <div style="margin-top:14px;">
+      <label>Original DC Number</label>
+      <input type="text" id="dcNumber" placeholder="Enter DC Number">
+    </div>
+  </div>
+
+  <!-- Party Details -->
+  <div class="card">
+    <h3>📍 Party Details</h3>
+    <div style="margin-bottom:14px;">
+      <label>Party Name</label>
+      <input type="text" id="partyName" placeholder="e.g. Hyundai Motor India">
+    </div>
+    <div>
+      <label>Address</label>
+      <textarea id="partyAddress" placeholder="Building / Street&#10;Area, City&#10;State - Pincode"
+        style="resize:vertical;min-height:90px;line-height:1.5;font-size:.95rem;"></textarea>
+    </div>
+  </div>
+
+  <!-- Scanner -->
+  <div class="card">
+    <h3>📷 Scan Part Number</h3>
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <button class="btn btn-primary" id="cameraBtn" onclick="startScanner()">📷 Start Camera</button>
+      <button class="btn btn-danger hidden" id="stopBtn" onclick="stopScanner()">⛔ Stop</button>
+    </div>
+    <div id="scannerWrap" class="scanner-wrap hidden">
+      <video id="scanVideo" playsinline autoplay muted></video>
+      <div class="scan-line"></div>
+      <div class="sc tl"></div><div class="sc tr"></div>
+      <div class="sc bl"></div><div class="sc br"></div>
+      <div class="scan-badge" id="scanBadge">🔍 Scanning…</div>
+    </div>
+  </div>
+
+  <!-- Entry + Qty Picker -->
+  <div class="card">
+    <h3>✏️ Enter Part Number &amp; Set Qty</h3>
+    <div class="barcode-row">
+      <input type="text" id="searchInput" placeholder="Type Part Number and press Search or Enter"
+             onkeydown="if(event.key==='Enter')lookupBarcode()">
+      <button class="btn btn-primary" onclick="lookupBarcode()" style="white-space:nowrap">🔍 Search</button>
+    </div>
+    <div class="picker-box">
+      <div class="p-label" id="pLabel">No product selected</div>
+      <div class="p-name" id="pName">&nbsp;</div>
+      <div class="p-meta" id="pMeta"></div>
+      <div class="pick-row">
+        <div class="stepper">
+          <button class="st-btn" onclick="pickDelta(-1)">−</button>
+          <input class="st-num" type="number" id="pickQty" value="1" min="1" onchange="clampPick()">
+          <button class="st-btn" onclick="pickDelta(1)">+</button>
+        </div>
+        <button class="btn-add-confirm" id="addBtn" onclick="confirmAdd()" disabled>➕ Add to List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="card">
+    <h3>🗒️ Items List</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>S.No</th><th>Part No.</th><th>Product</th><th>Under</th><th>Alias Name</th><th>Return Qty</th><th>MRP</th><th>Action</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="actions-bar">
+      <button class="btn btn-success" onclick="generatePDF()">📄 Generate PDF</button>
+      <button class="btn btn-danger" onclick="clearTable()">🗑️ Clear All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var COL={sno:0,vchNo:1,date:2,alias:3,product:4,under:5,qty:6,mrp:7,partNo:8};
+var products={},scannedItems=[],scannerRunning=false,lastScanned='',pendingProduct=null;
+var scanStream=null,scanInterval=null,scanCanvas=null,scanCtx=null;
+
+window.onload=function(){
+  document.getElementById('returnDate').valueAsDate=new Date();
+  var saved=localStorage.getItem('gasUrl');
+  if(saved){document.getElementById('apiUrl').value=saved;loadProducts();}
+  else setStatus('⚠️ Paste your Google Apps Script URL above','error');
+  renderTable();
+};
+
+function setStatus(msg,type){var el=document.getElementById('status');el.textContent=msg;el.className='status '+type;}
+function saveUrl(){var url=document.getElementById('apiUrl').value.trim();if(!url){alert('Please enter a URL');return;}localStorage.setItem('gasUrl',url);setStatus('✅ URL saved','ok');}
+
+function doFetch(cb){
+  var url=document.getElementById('apiUrl').value.trim();
+  if(!url){setStatus('⚠️ Enter Google Apps Script URL first','error');return;}
+  fetch(url).then(function(r){return r.text();}).then(function(txt){
+    var data;try{data=JSON.parse(txt);}catch(e){setStatus('❌ GAS did not return valid JSON.','error');return;}
+    cb(data);
+  }).catch(function(e){setStatus('❌ Fetch error: '+e.message,'error');});
+}
+
+function loadProducts(){
+  setStatus('⏳ Loading products…','loading');
+  doFetch(function(data){
+    if(!Array.isArray(data)||!data.length){setStatus('❌ No data returned.','error');return;}
+    function norm(k){return String(k).toLowerCase().replace(/[\s_\-\.]+/g,'');}
+    var allKeys=Array.isArray(data[0])?[]:Object.keys(data[0]);
+    function findKey(tries){
+      for(var i=0;i<tries.length;i++)if(allKeys.indexOf(tries[i])!==-1)return tries[i];
+      for(var j=0;j<tries.length;j++){var n=norm(tries[j]);for(var k=0;k<allKeys.length;k++)if(norm(allKeys[k])===n)return allKeys[k];}
+      return null;
+    }
+    products={};var skipped=0;
+    if(Array.isArray(data[0])){
+      for(var i=1;i<data.length;i++){var row=data[i];var bc=String(row[COL.partNo]||'').trim();if(!bc){skipped++;continue;}products[bc]=mkProd(bc,row[COL.product],row[COL.under],row[COL.alias],row[COL.qty],row[COL.mrp],row[COL.vchNo]);}
+    } else {
+      var Kp=findKey(['Part Number','part number','PartNumber','Part No','PartNo']);
+      var Kpr=findKey(['Product','product','Product Name']);
+      var Ku=findKey(['Under','under','Brand','brand']);
+      var Ka=findKey(['Alias Name','alias name','Alias','alias']);
+      var Kq=findKey(['Qty','qty','Quantity']);
+      var Km=findKey(['MRP','mrp','Price']);
+      var Kv=findKey(['vch no','Vch No','VCH NO']);
+      if(!Kp){setStatus('❌ "Part Number" column not found in sheet.','error');return;}
+      data.forEach(function(row){var bc=String(row[Kp]!==null&&row[Kp]!==undefined?row[Kp]:'').trim();if(!bc){skipped++;return;}products[bc]=mkProd(bc,Kpr?row[Kpr]:'',Ku?row[Ku]:'',Ka?row[Ka]:'',Kq?row[Kq]:'',Km?row[Km]:'',Kv?row[Kv]:'');});
+    }
+    var total=Object.keys(products).length;
+    if(total===0)setStatus('❌ 0 products loaded. Part Number values empty.','error');
+    else setStatus('✅ '+total+' products loaded'+(skipped?' ('+skipped+' skipped)':''),'ok');
+  });
+}
+function mkProd(bc,product,under,alias,qty,mrp,vchNo){
+  return{partNo:bc,product:String(product||'N/A').trim(),under:String(under||'N/A').trim(),
+    alias:String(alias||'').trim(),qty:String(qty||'0').trim(),mrp:String(mrp||'0').trim(),vchNo:String(vchNo||'').trim()};
+}
+
+/* ══ SCANNER — works on iOS Safari, Android Chrome, Desktop ══ */
+function startScanner(){
+  document.getElementById('scannerWrap').classList.remove('hidden');
+  document.getElementById('cameraBtn').classList.add('hidden');
+  document.getElementById('stopBtn').classList.remove('hidden');
+  setStatus('📷 Requesting camera access…','loading');
+
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    setStatus('❌ Camera not supported in this browser. Please type the Part Number manually.','error');
+    stopScanner(); return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ ideal:'environment' } } })
+  .then(function(stream){
+    scanStream = stream;
+    var video = document.getElementById('scanVideo');
+    video.srcObject = stream;
+    video.setAttribute('playsinline','');
+    video.muted = true;
+    video.play().then(function(){
+      scannerRunning = true;
+      scanCanvas = document.createElement('canvas');
+      scanCtx = scanCanvas.getContext('2d');
+      setStatus('📷 Point camera at barcode','loading');
+
+      if('BarcodeDetector' in window){
+        // Native — Chrome Android & desktop
+        var det = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code'] });
+        document.getElementById('scanBadge').textContent='🔍 Native scanner';
+        scanInterval = setInterval(function(){
+          if(!scannerRunning) return;
+          det.detect(video).then(function(bc){ if(bc.length) handleCode(bc[0].rawValue); }).catch(function(){});
+        },300);
+
+      } else if(window.Quagga){
+        // Canvas-based Quagga — works on iOS Safari
+        document.getElementById('scanBadge').textContent='🔍 Quagga scanner';
+        scanInterval = setInterval(function(){
+          if(!scannerRunning||!video.videoWidth) return;
+          scanCanvas.width  = video.videoWidth;
+          scanCanvas.height = video.videoHeight;
+          scanCtx.drawImage(video,0,0);
+          try{
+            Quagga.decodeSingle({
+              src: scanCanvas.toDataURL('image/png'),
+              numOfWorkers:0,
+              inputStream:{ size:800 },
+              decoder:{ readers:['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader'] },
+              locate:true
+            }, function(result){
+              if(result&&result.codeResult&&result.codeResult.code) handleCode(result.codeResult.code);
+            });
+          }catch(e){}
+        },700);
+
+      } else {
+        setStatus('⚠️ Live scanning unavailable — type the Part Number manually.','error');
+      }
+    }).catch(function(e){ cameraErr(e); });
+  })
+  .catch(function(e){ cameraErr(e); });
+}
+
+function handleCode(code){
+  if(!code||code===lastScanned) return;
+  lastScanned = code;
+  if(navigator.vibrate) navigator.vibrate([80]);
+  document.getElementById('searchInput').value = code;
+  lookupBarcode(code);
+  setTimeout(function(){ lastScanned=''; },2500);
+}
+
+function cameraErr(err){
+  var m = String(err.message||err);
+  if(/denied|NotAllowed|permission/i.test(m))
+    setStatus('❌ Camera blocked. On iPhone: Settings → Safari → Camera → Allow','error');
+  else if(/NotFound|Devices/i.test(m))
+    setStatus('❌ No camera found on this device.','error');
+  else
+    setStatus('❌ Camera error: '+m,'error');
+  stopScanner();
+}
+
+function stopScanner(){
+  scannerRunning = false;
+  if(scanInterval){ clearInterval(scanInterval); scanInterval=null; }
+  if(scanStream){ scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream=null; }
+  var v=document.getElementById('scanVideo'); if(v) v.srcObject=null;
+  scanCanvas=null; scanCtx=null;
+  document.getElementById('scannerWrap').classList.add('hidden');
+  document.getElementById('cameraBtn').classList.remove('hidden');
+  document.getElementById('stopBtn').classList.add('hidden');
+}
+
+function lookupBarcode(code){
+  var bc=(code||document.getElementById('searchInput').value).trim();if(!bc)return;
+  var key=null;Object.keys(products).forEach(function(k){if(k===bc||k.replace(/\s/g,'')===bc.replace(/\s/g,''))key=k;});
+  if(!key){setStatus('❌ Part Number not found: '+bc,'error');pendingProduct=null;document.getElementById('pLabel').textContent='Not found';document.getElementById('pName').innerHTML='&nbsp;';document.getElementById('pMeta').innerHTML='';document.getElementById('addBtn').disabled=true;return;}
+  pendingProduct=JSON.parse(JSON.stringify(products[key]));
+  document.getElementById('pLabel').textContent='Part No: '+pendingProduct.partNo;
+  document.getElementById('pName').textContent=pendingProduct.product;
+  var tags='';
+  if(pendingProduct.under)tags+='<span class="p-tag">🏷️ '+pendingProduct.under+'</span>';
+  if(pendingProduct.alias)tags+='<span class="p-tag">📌 '+pendingProduct.alias+'</span>';
+  if(pendingProduct.mrp)tags+='<span class="p-tag">₹ MRP: '+parseFloat(pendingProduct.mrp||0).toLocaleString('en-IN')+'</span>';
+  if(pendingProduct.vchNo)tags+='<span class="p-tag">Vch: '+pendingProduct.vchNo+'</span>';
+  document.getElementById('pMeta').innerHTML=tags;
+  document.getElementById('pickQty').value=1;document.getElementById('addBtn').disabled=false;
+  setStatus('✅ "'+pendingProduct.product+'" found — set qty and press Add','ok');
+}
+function pickDelta(d){var i=document.getElementById('pickQty');i.value=Math.max(1,(parseInt(i.value)||1)+d);}
+function clampPick(){var i=document.getElementById('pickQty');if(!i.value||parseInt(i.value)<1)i.value=1;}
+function confirmAdd(){
+  if(!pendingProduct)return;
+  var qty=Math.max(1,parseInt(document.getElementById('pickQty').value)||1);
+  var item=JSON.parse(JSON.stringify(pendingProduct));item.returnQty=String(qty);
+  scannedItems.push(item);renderTable();
+  setStatus('✅ "'+item.product+'" × '+qty+' added','ok');
+  pendingProduct=null;document.getElementById('searchInput').value='';
+  document.getElementById('pLabel').textContent='No product selected';document.getElementById('pName').innerHTML='&nbsp;';
+  document.getElementById('pMeta').innerHTML='';document.getElementById('pickQty').value=1;document.getElementById('addBtn').disabled=true;
+}
+function tblMinus(i){var c=parseInt(scannedItems[i].returnQty)||1;if(c<=1)return;scannedItems[i].returnQty=String(c-1);document.getElementById('tq'+i).textContent=c-1;refreshTotals();}
+function tblPlus(i){var c=parseInt(scannedItems[i].returnQty)||1;scannedItems[i].returnQty=String(c+1);document.getElementById('tq'+i).textContent=c+1;refreshTotals();}
+function refreshTotals(){var q=0,m=0;scannedItems.forEach(function(it){q+=parseInt(it.returnQty)||1;m+=parseFloat(it.mrp)||0;});document.getElementById('totQty').textContent=q;document.getElementById('totMrp').textContent='₹'+m.toLocaleString('en-IN');}
+function removeItem(i){scannedItems.splice(i,1);renderTable();}
+function clearTable(){if(confirm('Clear all items?')){scannedItems=[];renderTable();setStatus('🗑️ Cleared','loading');}}
+function renderTable(){
+  var q=0,m=0,html='';
+  for(var i=0;i<scannedItems.length;i++){var it=scannedItems[i],rq=parseInt(it.returnQty)||1,mr=parseFloat(it.mrp)||0;q+=rq;m+=mr;
+    html+='<tr><td>'+(i+1)+'</td><td class="bc">'+it.partNo+'</td><td>'+it.product+'</td><td>'+it.under+'</td><td class="dim">'+(it.alias||'—')+'</td><td><div class="stepper"><button class="st-btn" onclick="tblMinus('+i+')">&#8722;</button><span id="tq'+i+'" style="width:38px;text-align:center;font-weight:700;font-size:.95rem;">'+rq+'</span><button class="st-btn" onclick="tblPlus('+i+')">&#43;</button></div></td><td>₹'+mr.toLocaleString('en-IN')+'</td><td><button class="btn btn-danger btn-sm" onclick="removeItem('+i+')">Remove</button></td></tr>';
+  }
+  html+='<tr class="total-row"><td colspan="5" style="text-align:right">Total:</td><td id="totQty">'+q+'</td><td id="totMrp">₹'+m.toLocaleString('en-IN')+'</td><td></td></tr>';
+  document.getElementById('tableBody').innerHTML=html;
+}
+
+/* ══ NUMBER TO WORDS (Indian) ══ */
+function numToWords(n){
+  var a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  var b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function h(x){if(x===0)return '';if(x<20)return a[x]+' ';if(x<100)return b[Math.floor(x/10)]+(x%10?' '+a[x%10]:'')+' ';return a[Math.floor(x/100)]+' Hundred '+h(x%100);}
+  var intN=Math.floor(n),dec=Math.round((n-intN)*100),res='';
+  if(intN>=10000000){res+=h(Math.floor(intN/10000000))+'Crore ';intN%=10000000;}
+  if(intN>=100000){res+=h(Math.floor(intN/100000))+'Lakh ';intN%=100000;}
+  if(intN>=1000){res+=h(Math.floor(intN/1000))+'Thousand ';intN%=1000;}
+  if(intN>0)res+=h(intN);
+  res=res.trim();if(dec>0)res+=' and '+h(dec).trim()+' Paise';
+  return res.trim()||'Zero';
+}
+
+/* ══ PDF — Invoice Style ══ */
+function generatePDF(){
+  if(!scannedItems.length){alert('No items to export!');return;}
+  var raw=document.getElementById('returnDate').value||new Date().toISOString().split('T')[0];
+  var p=raw.split('-'),date=p[2]+'-'+p[1]+'-'+p[0];
+  var salesPerson=document.getElementById('salesName').value.trim()||'N/A';
+  var partyName=document.getElementById('partyName').value.trim()||'';
+  var partyAddr=document.getElementById('partyAddress').value.trim()||'';
+
+  var dcNumber=document.getElementById('dcNumber').value.trim()||'—';
+  var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  var lm=7,pw=196,cx=lm;
+  doc.setDrawColor(0);doc.setLineWidth(0.25);
+  var y=7;
+
+  /* 1. PARTY NAME (above title) */
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(0,0,0);
+  doc.text('Expert Corporate Solutions',cx+pw/2,y+5,{align:'center'});
+  y+=9;
+
+  /* 2. TITLE BAR */
+  doc.setFillColor(102,126,234);
+  doc.rect(cx,y,pw,9,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(255,255,255);
+  doc.text('SAMPLE RETURN FORM',cx+pw/2,y+6.2,{align:'center'});
+  y+=9;
+
+  /* 3. COMPANY HEADER */
+  var hH=46,split=cx+pw*0.60;
+  doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(0,0,0);
+  doc.text('Expert Corporate Solutions',cx+3,y+6);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.8);
+  var ci=['Plot No. 1,2,3,4, Sree Mahalakshmi Nagar,','Noombal, Chennai - 600 077.'];
+  var iy=y+11;ci.forEach(function(l){doc.text(l,cx+3,iy);iy+=4.5;});
+  doc.setLineWidth(0.3);doc.line(split,y,split,y+hH);
+  var rx=split+3,rMid=split+(cx+pw-split)/2;
+  doc.setFontSize(7.5);doc.setTextColor(90,90,90);
+  doc.text('Original DC Number',rx,y+5);doc.text('Dated',rMid,y+5);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);
+  doc.text(dcNumber,rx,y+10);doc.text(date,rMid,y+10);
+  doc.setLineWidth(0.2);doc.line(split,y+13,cx+pw,y+13);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Sales Person',rx,y+18);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(salesPerson,rx,y+24);
+  doc.setLineWidth(0.3);doc.rect(cx,y,pw,hH);
+  y+=hH;
+
+  /* 4. PARTY */
+  var pH=30;doc.rect(cx,y,pw,pH);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);  doc.text('Party',cx+3,y+5);
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(0,0,0);doc.text(partyName||'N/A',cx+3,y+11);
+  if(partyAddr){doc.setFont('helvetica','normal');doc.setFontSize(8.5);var al=partyAddr.split('\n'),ay=y+17;al.forEach(function(l){if(l.trim()){doc.text(l.trim(),cx+3,ay);ay+=4.5;}});}
+  y+=pH;
+
+  /* 5. ITEMS TABLE */
+  var tQ=0,tAmt=0;
+  var rows=scannedItems.map(function(it,i){
+    var q=parseInt(it.returnQty)||1,m=parseFloat(it.mrp)||0,amt=q*m;
+    tQ+=q;tAmt+=amt;
+    return[{content:String(i+1),styles:{halign:'center'}},it.product+(it.alias?'\n('+it.alias+')':''),it.under,it.partNo,{content:q+' nos',styles:{halign:'center'}},{content:'₹'+m.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}},{content:'₹'+amt.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}}];
+  });
+  rows.push([{content:'',colSpan:4,styles:{fillColor:[230,235,245]}},{content:tQ+' nos',styles:{halign:'center',fontStyle:'bold',fillColor:[230,235,245]}},{content:'Total',styles:{halign:'right',fontStyle:'bold',fillColor:[230,235,245]}},{content:'₹'+tAmt.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right',fontStyle:'bold',fillColor:[230,235,245]}}]);
+  doc.autoTable({startY:y,
+    head:[[{content:'Sl\nNo.',styles:{halign:'center',cellWidth:9}},{content:'Description of Goods',styles:{cellWidth:57}},{content:'Under / Brand',styles:{cellWidth:28}},{content:'Part No.',styles:{cellWidth:27}},{content:'Quantity',styles:{halign:'center',cellWidth:22}},{content:'Rate (MRP)',styles:{halign:'right',cellWidth:26}},{content:'Amount',styles:{halign:'right',cellWidth:27}}]],
+    body:rows,theme:'grid',margin:{left:lm,right:lm},
+    styles:{fontSize:8.5,cellPadding:{top:3,bottom:3,left:2,right:2},textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2},
+    headStyles:{fillColor:[102,126,234],textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,lineColor:[0,0,0],lineWidth:0.25}
+  });
+  y=doc.lastAutoTable.finalY;
+
+  /* 6. AMOUNT IN WORDS */
+  var wH=12;doc.rect(cx,y,pw,wH);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Amount Chargeable (in words)',cx+3,y+4.5);
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(0,0,0);doc.text('INR '+numToWords(tAmt)+' Only',cx+3,y+9.5);
+  doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('E. & O.E',cx+pw-3,y+9.5,{align:'right'});
+  y+=wH;
+
+  /* 7. SIGNATURE */
+  var sH=28,sSplit=cx+pw*0.55;
+  doc.rect(cx,y,pw*0.55,sH);doc.rect(sSplit,y,pw*0.45,sH);
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(0,0,0);
+  doc.text("Customer's Seal and Signature",cx+3,y+5);
+  doc.text('for EXPERT CORPORATE SOLUTIONS',sSplit+3,y+5);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(60,60,60);doc.text('Authorised Signatory',cx+pw-3,y+sH-4,{align:'right'});
+  y+=sH;
+
+  doc.save('Sample_Return_'+date+'.pdf');
+  setStatus('✅ PDF downloaded!','ok');
+}
+</script>
+</body>
+</html>
