@@ -113,9 +113,17 @@
   <!-- Scanner -->
   <div class="card">
     <h3>📷 Scan Part Number</h3>
+    <!-- iOS: photo capture (works inside iframe) -->
+    <input type="file" id="iosCapture" accept="image/*" capture="environment"
+           style="display:none" onchange="processIOSCapture(this)">
+
     <div style="display:flex;gap:10px;margin-bottom:10px;">
       <button class="btn btn-primary" id="cameraBtn" onclick="startScanner()">📷 Start Camera</button>
       <button class="btn btn-danger hidden" id="stopBtn" onclick="stopScanner()">⛔ Stop</button>
+    </div>
+    <div id="iosScanStatus" class="hidden"
+         style="text-align:center;padding:14px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;font-size:.9rem;">
+      📸 Photo captured — processing barcode…
     </div>
     <div id="scannerWrap" class="scanner-wrap hidden">
       <video id="scanVideo" playsinline autoplay muted></video>
@@ -227,95 +235,113 @@ function mkProd(bc,product,under,alias,qty,mrp,vchNo){
     alias:String(alias||'').trim(),qty:String(qty||'0').trim(),mrp:String(mrp||'0').trim(),vchNo:String(vchNo||'').trim()};
 }
 
-/* ══ SCANNER — works on iOS Safari, Android Chrome, Desktop ══ */
+/* ══ SCANNER ══ */
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+
 function startScanner(){
+  if(isIOS()){
+    // iOS Safari blocks getUserMedia in iframes — use file/camera capture instead
+    document.getElementById('iosCapture').click();
+    return;
+  }
   document.getElementById('scannerWrap').classList.remove('hidden');
   document.getElementById('cameraBtn').classList.add('hidden');
   document.getElementById('stopBtn').classList.remove('hidden');
-  setStatus('📷 Requesting camera access…','loading');
+  setStatus('📷 Starting camera…','loading');
 
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    setStatus('❌ Camera not supported in this browser. Please type the Part Number manually.','error');
+    setStatus('❌ Camera not supported. Please type the Part Number manually.','error');
     stopScanner(); return;
   }
 
-  navigator.mediaDevices.getUserMedia({ audio:false, video:{ facingMode:{ ideal:'environment' } } })
+  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'}}})
   .then(function(stream){
-    scanStream = stream;
-    var video = document.getElementById('scanVideo');
-    video.srcObject = stream;
-    video.setAttribute('playsinline','');
-    video.muted = true;
+    scanStream=stream;
+    var video=document.getElementById('scanVideo');
+    video.srcObject=stream; video.muted=true;
     video.play().then(function(){
-      scannerRunning = true;
-      scanCanvas = document.createElement('canvas');
-      scanCtx = scanCanvas.getContext('2d');
+      scannerRunning=true;
+      scanCanvas=document.createElement('canvas');
+      scanCtx=scanCanvas.getContext('2d');
       setStatus('📷 Point camera at barcode','loading');
-
       if('BarcodeDetector' in window){
-        // Native — Chrome Android & desktop
-        var det = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code'] });
+        var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']});
         document.getElementById('scanBadge').textContent='🔍 Native scanner';
-        scanInterval = setInterval(function(){
-          if(!scannerRunning) return;
-          det.detect(video).then(function(bc){ if(bc.length) handleCode(bc[0].rawValue); }).catch(function(){});
+        scanInterval=setInterval(function(){
+          if(!scannerRunning)return;
+          det.detect(video).then(function(bc){if(bc.length)handleCode(bc[0].rawValue);}).catch(function(){});
         },300);
-
       } else if(window.Quagga){
-        // Canvas-based Quagga — works on iOS Safari
         document.getElementById('scanBadge').textContent='🔍 Quagga scanner';
-        scanInterval = setInterval(function(){
-          if(!scannerRunning||!video.videoWidth) return;
-          scanCanvas.width  = video.videoWidth;
-          scanCanvas.height = video.videoHeight;
+        scanInterval=setInterval(function(){
+          if(!scannerRunning||!video.videoWidth)return;
+          scanCanvas.width=video.videoWidth; scanCanvas.height=video.videoHeight;
           scanCtx.drawImage(video,0,0);
-          try{
-            Quagga.decodeSingle({
-              src: scanCanvas.toDataURL('image/png'),
-              numOfWorkers:0,
-              inputStream:{ size:800 },
-              decoder:{ readers:['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader'] },
-              locate:true
-            }, function(result){
-              if(result&&result.codeResult&&result.codeResult.code) handleCode(result.codeResult.code);
-            });
-          }catch(e){}
+          try{Quagga.decodeSingle({src:scanCanvas.toDataURL('image/png'),numOfWorkers:0,inputStream:{size:800},
+            decoder:{readers:['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader']},locate:true},
+            function(r){if(r&&r.codeResult&&r.codeResult.code)handleCode(r.codeResult.code);});}catch(e){}
         },700);
-
       } else {
-        setStatus('⚠️ Live scanning unavailable — type the Part Number manually.','error');
+        setStatus('⚠️ Live scanning unavailable — type Part Number manually.','error');
       }
-    }).catch(function(e){ cameraErr(e); });
-  })
-  .catch(function(e){ cameraErr(e); });
+    }).catch(cameraErr);
+  }).catch(cameraErr);
+}
+
+/* iOS: process captured photo with Quagga */
+function processIOSCapture(input){
+  if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  document.getElementById('iosScanStatus').classList.remove('hidden');
+  setStatus('⏳ Reading barcode from photo…','loading');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    if(!window.Quagga){setStatus('❌ Quagga not loaded yet. Try again.','error');return;}
+    Quagga.decodeSingle({
+      src:e.target.result,
+      numOfWorkers:0,
+      inputStream:{size:1200},
+      decoder:{readers:['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader']},
+      locate:true
+    },function(result){
+      document.getElementById('iosScanStatus').classList.add('hidden');
+      if(result&&result.codeResult&&result.codeResult.code){
+        handleCode(result.codeResult.code);
+      } else {
+        setStatus('❌ Could not read barcode. Try better lighting or a closer shot.','error');
+      }
+      input.value=''; // reset so same file can be captured again
+    });
+  };
+  reader.readAsDataURL(file);
 }
 
 function handleCode(code){
-  if(!code||code===lastScanned) return;
-  lastScanned = code;
-  if(navigator.vibrate) navigator.vibrate([80]);
-  document.getElementById('searchInput').value = code;
+  if(!code||code===lastScanned)return;
+  lastScanned=code;
+  if(navigator.vibrate)navigator.vibrate([80]);
+  document.getElementById('searchInput').value=code;
   lookupBarcode(code);
-  setTimeout(function(){ lastScanned=''; },2500);
+  setTimeout(function(){lastScanned='';},2500);
 }
 
 function cameraErr(err){
-  var m = String(err.message||err);
+  var m=String(err.message||err);
   if(/denied|NotAllowed|permission/i.test(m))
-    setStatus('❌ Camera blocked. On iPhone: Settings → Safari → Camera → Allow','error');
-  else if(/NotFound|Devices/i.test(m))
-    setStatus('❌ No camera found on this device.','error');
-  else
-    setStatus('❌ Camera error: '+m,'error');
+    setStatus('❌ Camera blocked. Go to Settings → Safari → Camera → Allow','error');
+  else setStatus('❌ Camera error: '+m,'error');
   stopScanner();
 }
 
 function stopScanner(){
-  scannerRunning = false;
-  if(scanInterval){ clearInterval(scanInterval); scanInterval=null; }
-  if(scanStream){ scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream=null; }
-  var v=document.getElementById('scanVideo'); if(v) v.srcObject=null;
-  scanCanvas=null; scanCtx=null;
+  scannerRunning=false;
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  if(scanStream){scanStream.getTracks().forEach(function(t){t.stop();});scanStream=null;}
+  var v=document.getElementById('scanVideo');if(v)v.srcObject=null;
+  scanCanvas=null;scanCtx=null;
   document.getElementById('scannerWrap').classList.add('hidden');
   document.getElementById('cameraBtn').classList.remove('hidden');
   document.getElementById('stopBtn').classList.add('hidden');
