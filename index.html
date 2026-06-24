@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>📦 Sample Return Form</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -34,27 +34,6 @@
     @media(max-width:600px){.row2{grid-template-columns:1fr;}}
     label{display:block;margin-bottom:6px;opacity:.8;font-size:.88rem;}
     .hidden{display:none!important;}
-    .scanner-wrap{position:relative;background:#000;border-radius:14px;overflow:hidden;height:320px;margin:12px 0;}
-    .scanner-wrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-transform:translateZ(0);transform:translateZ(0);}
-    /* dark overlay around scan zone */
-    .scan-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;
-      background:linear-gradient(rgba(0,0,0,.5) 0%,transparent 25%,transparent 75%,rgba(0,0,0,.5) 100%),
-                 linear-gradient(90deg,rgba(0,0,0,.5) 0%,transparent 15%,transparent 85%,rgba(0,0,0,.5) 100%);}
-    .scan-zone{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-      width:75%;height:110px;border:2px solid rgba(102,126,234,.9);border-radius:6px;z-index:3;pointer-events:none;}
-    /* corner accents */
-    .sc{position:absolute;width:18px;height:18px;border-color:#667eea;border-style:solid;z-index:4;}
-    .tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:3px 0 0 0;}
-    .tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 3px 0 0;}
-    .bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 3px;}
-    .br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 3px 0;}
-    /* scan line inside zone */
-    .scan-line{position:absolute;left:0;right:0;height:2px;background:rgba(102,126,234,.95);
-      box-shadow:0 0 6px #667eea,0 0 14px #667eea;animation:scanMove 1.8s ease-in-out infinite;z-index:4;}
-    @keyframes scanMove{0%,100%{top:4px;}50%{bottom:4px;top:calc(100% - 6px);}}
-    .scan-badge{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-      background:rgba(0,0,0,.6);color:#c7d2fe;font-size:.78rem;padding:5px 14px;
-      border-radius:20px;z-index:5;white-space:nowrap;letter-spacing:.3px;}
     .barcode-row{display:flex;gap:10px;margin-bottom:16px;} .barcode-row input{flex:1;}
     .picker-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 18px;}
     .p-name{font-size:1rem;font-weight:700;color:#c7d2fe;margin-bottom:8px;min-height:20px;}
@@ -63,7 +42,7 @@
     .p-label{font-size:.82rem;opacity:.55;margin-bottom:10px;min-height:14px;}
     .pick-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
     .stepper{display:inline-flex;align-items:center;border:2px solid rgba(255,255,255,.4);border-radius:8px;overflow:hidden;background:rgba(0,0,0,.25);}
-    .st-btn{width:38px;height:38px;background:#667eea;color:#fff;border:none;font-size:1.3rem;font-weight:900;cursor:pointer;line-height:1;transition:background .15s;}
+    .st-btn{width:38px;height:38px;background:#667eea;color:#fff;border:none;font-size:1.3rem;font-weight:900;cursor:pointer;line-height:1;}
     .st-btn:hover{background:#4f5fd0;} .st-btn:active{background:#3d4dbf;}
     .st-num{width:48px;height:38px;background:transparent;color:#fff;font-size:1rem;font-weight:700;text-align:center;border:none;outline:none;padding:0;}
     .btn-add-confirm{height:38px;padding:0 22px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;white-space:nowrap;}
@@ -79,6 +58,39 @@
     .actions-bar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
     .actions-bar .btn{flex:1;min-width:130px;}
     .dim{opacity:.6;font-size:.8rem;}
+
+    /* ═══ FULL-SCREEN SCANNER MODAL ═══ */
+    .scanner-modal{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .scanner-modal video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-transform:translateZ(0);transform:translateZ(0);}
+    /* dark vignette outside scan zone */
+    .scan-mask{position:absolute;inset:0;z-index:2;pointer-events:none;
+      background:radial-gradient(ellipse 280px 220px at 50% 42%,transparent 95%,rgba(0,0,0,.72) 100%),
+                 linear-gradient(rgba(0,0,0,.55) 0,transparent 18%,transparent 68%,rgba(0,0,0,.55) 100%);}
+    /* scan frame */
+    .scan-frame{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);width:270px;height:200px;z-index:3;}
+    /* corners */
+    .fc{position:absolute;width:34px;height:34px;border-color:#fff;border-style:solid;border-radius:8px;}
+    .fc.tl{top:0;left:0;border-width:4px 0 0 4px;}
+    .fc.tr{top:0;right:0;border-width:4px 4px 0 0;}
+    .fc.bl{bottom:0;left:0;border-width:0 0 4px 4px;}
+    .fc.br{bottom:0;right:0;border-width:0 4px 4px 0;}
+    /* animated scan line */
+    .scan-laser{position:absolute;left:6px;right:6px;height:2px;background:linear-gradient(90deg,transparent,#22c55e,#22c55e,transparent);box-shadow:0 0 6px #22c55e,0 0 12px rgba(34,197,94,.6);animation:laserMove 2s ease-in-out infinite;border-radius:2px;}
+    @keyframes laserMove{0%,100%{top:8px;}50%{top:calc(100% - 10px);}}
+    /* hint text */
+    .scan-hint{position:absolute;top:calc(42% + 114px);left:0;right:0;text-align:center;color:rgba(255,255,255,.75);font-size:.82rem;z-index:3;letter-spacing:.4px;}
+    /* top bar */
+    .scan-topbar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:4;padding-top:env(safe-area-inset-top);}
+    .scan-close{width:38px;height:38px;background:rgba(0,0,0,.4);border:none;border-radius:50%;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .scan-topbar-title{color:#fff;font-weight:600;font-size:1rem;letter-spacing:.3px;}
+    /* bottom toolbar */
+    .scan-toolbar{position:absolute;bottom:0;left:0;right:0;height:110px;background:rgba(40,36,36,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-around;z-index:4;padding-bottom:env(safe-area-inset-bottom);}
+    .tool-btn{width:62px;height:62px;background:transparent;border:none;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:14px;transition:background .15s;}
+    .tool-btn:active{background:rgba(255,255,255,.12);}
+    .tool-btn svg{width:28px;height:28px;}
+    .tool-btn span{font-size:.65rem;color:rgba(255,255,255,.7);letter-spacing:.2px;}
+    .tool-btn.flash-on svg{color:#fbbf24;}
+    .scan-center-btn{width:68px;height:68px;background:rgba(102,126,234,.25);border:2px solid rgba(102,126,234,.6);border-radius:16px;}
   </style>
 </head>
 <body>
@@ -123,30 +135,17 @@
     </div>
   </div>
 
-  <!-- Scanner -->
+  <!-- Scanner trigger -->
   <div class="card">
     <h3>📷 Scan Part Number</h3>
-    <!-- iOS fallback file input -->
-    <input type="file" id="iosCapture" accept="image/*" capture="environment"
-           style="display:none" onchange="processIOSCapture(this)">
-
-    <div style="display:flex;gap:10px;margin-bottom:10px;">
-      <button class="btn btn-primary" id="cameraBtn" onclick="startScanner()">📷 Start Camera</button>
-      <button class="btn btn-danger hidden" id="stopBtn" onclick="stopScanner()">⛔ Stop</button>
-    </div>
-    <div id="iosScanStatus" class="hidden"
-         style="text-align:center;padding:14px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;font-size:.9rem;">
-      ⏳ Reading barcode…
-    </div>
-    <div id="scannerWrap" class="scanner-wrap hidden">
-      <video id="scanVideo" playsinline webkit-playsinline autoplay muted></video>
-      <div class="scan-overlay"></div>
-      <div class="scan-zone">
-        <div class="sc tl"></div><div class="sc tr"></div>
-        <div class="sc bl"></div><div class="sc br"></div>
-        <div class="scan-line"></div>
-      </div>
-      <div class="scan-badge" id="scanBadge">🔍 Align barcode inside the box</div>
+    <!-- hidden inputs -->
+    <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="handleImageFile(this)">
+    <input type="file" id="iosCaptureInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageFile(this)">
+    <button class="btn btn-primary" style="width:100%;font-size:1rem;padding:14px;" onclick="startScanner()">
+      📷 Open Barcode Scanner
+    </button>
+    <div id="scanProcessing" class="hidden" style="text-align:center;padding:12px;margin-top:10px;background:rgba(255,255,255,.08);border-radius:10px;">
+      ⏳ Reading barcode from image…
     </div>
   </div>
 
@@ -179,7 +178,7 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>S.No</th><th>Part No.</th><th>Product</th><th>Under</th><th>Alias Name</th><th>Return Qty</th><th>MRP</th><th>Action</th></tr>
+          <tr><th>S.No</th><th>Part No.</th><th>Product</th><th>Under</th><th>Alias</th><th>Return Qty</th><th>MRP</th><th>Action</th></tr>
         </thead>
         <tbody id="tableBody"></tbody>
       </table>
@@ -191,10 +190,59 @@
   </div>
 </div>
 
+<!-- ═══ FULL-SCREEN SCANNER MODAL ═══ -->
+<div id="scannerModal" class="scanner-modal hidden">
+  <video id="scanVideo" playsinline webkit-playsinline autoplay muted></video>
+  <div class="scan-mask"></div>
+  <div class="scan-frame">
+    <div class="fc tl"></div><div class="fc tr"></div>
+    <div class="fc bl"></div><div class="fc br"></div>
+    <div class="scan-laser"></div>
+  </div>
+  <div class="scan-hint">Align barcode within the frame</div>
+
+  <!-- Top bar -->
+  <div class="scan-topbar">
+    <button class="scan-close" onclick="stopScanner()">✕</button>
+    <span class="scan-topbar-title">Scan Barcode</span>
+    <div style="width:38px"></div>
+  </div>
+
+  <!-- Bottom toolbar -->
+  <div class="scan-toolbar">
+    <!-- Gallery -->
+    <button class="tool-btn" onclick="openGallery()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21,15 16,10 5,21"/>
+      </svg>
+      <span>Gallery</span>
+    </button>
+    <!-- Barcode (center) -->
+    <button class="tool-btn scan-center-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="2" y="4" width="2" height="16"/><rect x="6" y="4" width="1" height="16"/>
+        <rect x="9" y="4" width="3" height="16"/><rect x="14" y="4" width="1" height="16"/>
+        <rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="1" height="16"/>
+      </svg>
+      <span>Scan</span>
+    </button>
+    <!-- Flash -->
+    <button class="tool-btn" id="flashBtn" onclick="toggleFlash()">
+      <svg id="flashIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+        <line x1="2" y1="2" x2="22" y2="22"/>
+      </svg>
+      <span id="flashLabel">Flash</span>
+    </button>
+  </div>
+</div>
+
 <script>
 var COL={sno:0,vchNo:1,date:2,alias:3,product:4,under:5,qty:6,mrp:7,partNo:8};
-var products={},scannedItems=[],scannerRunning=false,lastScanned='',pendingProduct=null;
+var products={},scannedItems=[],lastScanned='',pendingProduct=null;
 var scanStream=null,scanInterval=null,scanCanvas=null,scanCtx=null;
+var flashOn=false,videoTrack=null;
 
 window.onload=function(){
   document.getElementById('returnDate').valueAsDate=new Date();
@@ -230,7 +278,7 @@ function loadProducts(){
     products={};var skipped=0;
     if(Array.isArray(data[0])){
       for(var i=1;i<data.length;i++){var row=data[i];var bc=String(row[COL.partNo]||'').trim();if(!bc){skipped++;continue;}products[bc]=mkProd(bc,row[COL.product],row[COL.under],row[COL.alias],row[COL.qty],row[COL.mrp],row[COL.vchNo]);}
-    } else {
+    }else{
       var Kp=findKey(['Part Number','part number','PartNumber','Part No','PartNo']);
       var Kpr=findKey(['Product','product','Product Name']);
       var Ku=findKey(['Under','under','Brand','brand']);
@@ -238,8 +286,8 @@ function loadProducts(){
       var Kq=findKey(['Qty','qty','Quantity']);
       var Km=findKey(['MRP','mrp','Price']);
       var Kv=findKey(['vch no','Vch No','VCH NO']);
-      if(!Kp){setStatus('❌ "Part Number" column not found in sheet.','error');return;}
-      data.forEach(function(row){var bc=String(row[Kp]!==null&&row[Kp]!==undefined?row[Kp]:'').trim();if(!bc){skipped++;return;}products[bc]=mkProd(bc,Kpr?row[Kpr]:'',Ku?row[Ku]:'',Ka?row[Ka]:'',Kq?row[Kq]:'',Km?row[Km]:'',Kv?row[Kv]:'');});
+      if(!Kp){setStatus('❌ "Part Number" column not found.','error');return;}
+      data.forEach(function(row){var bc=String(row[Kp]!=null?row[Kp]:'').trim();if(!bc){skipped++;return;}products[bc]=mkProd(bc,Kpr?row[Kpr]:'',Ku?row[Ku]:'',Ka?row[Ka]:'',Kq?row[Kq]:'',Km?row[Km]:'',Kv?row[Kv]:'');});
     }
     var total=Object.keys(products).length;
     if(total===0)setStatus('❌ 0 products loaded. Part Number values empty.','error');
@@ -252,209 +300,171 @@ function mkProd(bc,product,under,alias,qty,mrp,vchNo){
 }
 
 /* ══ SCANNER ══ */
-function isIOS(){
-  return /iPad|iPhone|iPod/.test(navigator.userAgent)||
-    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-}
-
 function startScanner(){
-  if(isIOS()){
-    document.getElementById('iosTip').classList.remove('hidden');
-    document.getElementById('iosCapture').click();
-    return;
-  }
-  document.getElementById('scannerWrap').classList.remove('hidden');
-  document.getElementById('cameraBtn').classList.add('hidden');
-  document.getElementById('stopBtn').classList.remove('hidden');
-  setStatus('📷 Starting camera…','loading');
+  var modal=document.getElementById('scannerModal');
+  modal.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  flashOn=false; updateFlashIcon();
 
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    setStatus('❌ Camera not supported. Please type the Part Number manually.','error');
-    stopScanner(); return;
+    // No live camera support — use photo capture
+    modal.classList.add('hidden');
+    document.body.style.overflow='';
+    document.getElementById('iosCaptureInput').click();
+    return;
   }
 
-  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'}}})
-  .then(function(stream){
+  var video=document.getElementById('scanVideo');
+  video.setAttribute('playsinline','');
+  video.setAttribute('webkit-playsinline','');
+  video.muted=true;
+
+  navigator.mediaDevices.getUserMedia({
+    audio:false,
+    video:{facingMode:{ideal:'environment'},width:{ideal:1280}}
+  }).then(function(stream){
     scanStream=stream;
-    var video=document.getElementById('scanVideo');
-    video.srcObject=stream; video.muted=true;
-    video.play().then(function(){
-      scannerRunning=true;
+    videoTrack=stream.getVideoTracks()[0]||null;
+    video.srcObject=stream;
+    setTimeout(function(){
+      var p=video.play();
+      if(p&&p.catch)p.catch(function(){video.play();});
+    },100);
+    video.onloadedmetadata=function(){
       scanCanvas=document.createElement('canvas');
       scanCtx=scanCanvas.getContext('2d');
-      setStatus('📷 Point camera at barcode','loading');
-      if('BarcodeDetector' in window){
-        var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']});
-        document.getElementById('scanBadge').textContent='🔍 Native scanner';
-        scanInterval=setInterval(function(){
-          if(!scannerRunning)return;
-          det.detect(video).then(function(bc){if(bc.length)handleCode(bc[0].rawValue);}).catch(function(){});
-        },300);
-      } else if(window.Quagga){
-        document.getElementById('scanBadge').textContent='🔍 Quagga scanner';
-        scanInterval=setInterval(function(){
-          if(!scannerRunning||!video.videoWidth)return;
-          scanCanvas.width=video.videoWidth; scanCanvas.height=video.videoHeight;
-          scanCtx.drawImage(video,0,0);
-          try{Quagga.decodeSingle({src:scanCanvas.toDataURL('image/png'),numOfWorkers:0,inputStream:{size:800},
-            decoder:{readers:['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader']},locate:true},
-            function(r){if(r&&r.codeResult&&r.codeResult.code)handleCode(r.codeResult.code);});}catch(e){}
-        },700);
-      } else {
-        setStatus('⚠️ Live scanning unavailable — type Part Number manually.','error');
-      }
-    }).catch(cameraErr);
-  }).catch(cameraErr);
-}
-
-/* iOS: process captured photo */
-function processIOSCapture(input){
-  if(!input.files||!input.files[0])return;
-  var file=input.files[0];
-  document.getElementById('iosScanStatus').classList.remove('hidden');
-  setStatus('⏳ Reading barcode from photo…','loading');
-
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var img=new Image();
-    img.onload=function(){
-      // Resize: Quagga & BarcodeDetector work best around 1200px wide
-      var canvas=document.createElement('canvas');
-      var MAX=1200;
-      var ratio=Math.min(1,MAX/Math.max(img.width,img.height));
-      canvas.width=Math.floor(img.width*ratio);
-      canvas.height=Math.floor(img.height*ratio);
-      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-
-      function done(){
-        document.getElementById('iosScanStatus').classList.add('hidden');
-        input.value='';
-      }
-
-      // Try 1: BarcodeDetector on canvas (iOS 17+)
-      if('BarcodeDetector' in window){
-        var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']});
-        det.detect(canvas).then(function(barcodes){
-          if(barcodes.length>0){ handleCode(barcodes[0].rawValue); done(); }
-          else tryQuagga(canvas,done);
-        }).catch(function(){ tryQuagga(canvas,done); });
-      } else {
-        tryQuagga(canvas,done);
-      }
+      startDecoding(video);
     };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function tryQuagga(canvas,done){
-  if(!window.Quagga){
-    setStatus('❌ Scanner not ready — type Part Number manually.','error');
-    done(); return;
-  }
-  // Try with full-size first, then half-size crop if needed
-  var dataUrl=canvas.toDataURL('image/jpeg',0.95);
-  Quagga.decodeSingle({
-    src:dataUrl,
-    numOfWorkers:0,
-    inputStream:{size:1200},
-    locator:{patchSize:'large',halfSample:false},
-    decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
-    locate:true
-  },function(result){
-    if(result&&result.codeResult&&result.codeResult.code){
-      handleCode(result.codeResult.code); done();
-    } else {
-      // Retry: crop to centre 60% (barcode is usually centred)
-      var c2=document.createElement('canvas');
-      var cw=Math.floor(canvas.width*0.6), ch=Math.floor(canvas.height*0.6);
-      var ox=Math.floor((canvas.width-cw)/2), oy=Math.floor((canvas.height-ch)/2);
-      c2.width=cw; c2.height=ch;
-      c2.getContext('2d').drawImage(canvas,ox,oy,cw,ch,0,0,cw,ch);
-      Quagga.decodeSingle({
-        src:c2.toDataURL('image/jpeg',0.95),
-        numOfWorkers:0,
-        inputStream:{size:800},
-        locator:{patchSize:'medium',halfSample:false},
-        decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
-        locate:true
-      },function(r2){
-        if(r2&&r2.codeResult&&r2.codeResult.code){ handleCode(r2.codeResult.code); }
-        else{ setStatus('❌ Barcode not detected. Hold closer, fill the frame, try again.','error'); }
-        done();
-      });
-    }
+  }).catch(function(err){
+    modal.classList.add('hidden');
+    document.body.style.overflow='';
+    var m=String(err.message||err);
+    if(/denied|NotAllowed|permission/i.test(m))
+      setStatus('❌ Camera blocked — Settings → Safari → Camera → Allow','error');
+    else
+      setStatus('❌ Camera error. Trying photo mode…','error');
+    document.getElementById('iosCaptureInput').click();
   });
 }
 
-function processIOSCapture(input){
+function startDecoding(video){
+  if('BarcodeDetector' in window){
+    var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']});
+    scanInterval=setInterval(function(){
+      if(!video.videoWidth)return;
+      det.detect(video).then(function(bc){if(bc.length)onCodeFound(bc[0].rawValue);}).catch(function(){});
+    },300);
+  }else if(window.Quagga){
+    scanInterval=setInterval(function(){
+      if(!video.videoWidth)return;
+      scanCanvas.width=video.videoWidth;scanCanvas.height=video.videoHeight;
+      scanCtx.drawImage(video,0,0);
+      try{
+        Quagga.decodeSingle({
+          src:scanCanvas.toDataURL('image/jpeg',0.85),numOfWorkers:0,inputStream:{size:800},
+          locator:{patchSize:'medium',halfSample:true},
+          decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
+          locate:true
+        },function(r){if(r&&r.codeResult&&r.codeResult.code)onCodeFound(r.codeResult.code);});
+      }catch(e){}
+    },600);
+  }
+}
+
+function onCodeFound(code){
+  if(!code||code===lastScanned)return;
+  lastScanned=code;
+  if(navigator.vibrate)navigator.vibrate([80,50,80]);
+  stopScanner();
+  document.getElementById('searchInput').value=code;
+  lookupBarcode(code);
+  setTimeout(function(){lastScanned='';},3000);
+}
+
+function stopScanner(){
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  if(scanStream){scanStream.getTracks().forEach(function(t){t.stop();});scanStream=null;}
+  var v=document.getElementById('scanVideo');if(v)v.srcObject=null;
+  videoTrack=null;flashOn=false;
+  scanCanvas=null;scanCtx=null;
+  document.getElementById('scannerModal').classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+/* Flash */
+function toggleFlash(){
+  if(!videoTrack)return;
+  flashOn=!flashOn;
+  try{videoTrack.applyConstraints({advanced:[{torch:flashOn}]});}catch(e){}
+  updateFlashIcon();
+}
+function updateFlashIcon(){
+  var btn=document.getElementById('flashBtn');
+  var lbl=document.getElementById('flashLabel');
+  var ico=document.getElementById('flashIcon');
+  if(flashOn){
+    btn.classList.add('flash-on');lbl.textContent='Flash On';
+    ico.innerHTML='<polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>';
+  }else{
+    btn.classList.remove('flash-on');lbl.textContent='Flash';
+    ico.innerHTML='<polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/><line x1="2" y1="2" x2="22" y2="22"/>';
+  }
+}
+
+/* Gallery */
+function openGallery(){
+  stopScanner();
+  document.getElementById('galleryInput').click();
+}
+
+/* Handle image file (gallery or capture) */
+function handleImageFile(input){
   if(!input.files||!input.files[0])return;
-  document.getElementById('iosScanStatus').classList.remove('hidden');
-  setStatus('⏳ Reading barcode…','loading');
+  document.getElementById('scanProcessing').classList.remove('hidden');
+  setStatus('⏳ Reading barcode from image…','loading');
   var reader=new FileReader();
   reader.onload=function(e){
     var img=new Image();
     img.onload=function(){
       var canvas=document.createElement('canvas');
-      var MAX=1200, ratio=Math.min(1,MAX/Math.max(img.width,img.height));
-      canvas.width=Math.floor(img.width*ratio); canvas.height=Math.floor(img.height*ratio);
+      var MAX=1200,ratio=Math.min(1,MAX/Math.max(img.width,img.height));
+      canvas.width=Math.floor(img.width*ratio);canvas.height=Math.floor(img.height*ratio);
       canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-      function done(){document.getElementById('iosScanStatus').classList.add('hidden');input.value='';}
+      function done(){document.getElementById('scanProcessing').classList.add('hidden');input.value='';}
       if('BarcodeDetector' in window){
         new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']})
         .detect(canvas).then(function(bc){
-          if(bc.length){handleCode(bc[0].rawValue);done();}else quaggaPhoto(canvas,done);
-        }).catch(function(){quaggaPhoto(canvas,done);});
-      } else { quaggaPhoto(canvas,done); }
+          if(bc.length){onCodeFound(bc[0].rawValue);done();}
+          else quaggaImg(canvas,done);
+        }).catch(function(){quaggaImg(canvas,done);});
+      }else quaggaImg(canvas,done);
     };
     img.src=e.target.result;
   };
   reader.readAsDataURL(input.files[0]);
 }
-
-function quaggaPhoto(canvas,done){
+function quaggaImg(canvas,done){
   if(!window.Quagga){setStatus('❌ Type Part Number manually.','error');done();return;}
   Quagga.decodeSingle({src:canvas.toDataURL('image/jpeg',0.95),numOfWorkers:0,inputStream:{size:1200},
     locator:{patchSize:'large',halfSample:false},
     decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
     locate:true},function(r){
-    if(r&&r.codeResult&&r.codeResult.code){handleCode(r.codeResult.code);done();}
-    else{setStatus('❌ Not detected. Try again closer to the barcode.','error');done();}
+    if(r&&r.codeResult&&r.codeResult.code){onCodeFound(r.codeResult.code);}
+    else setStatus('❌ Barcode not detected. Try again or type manually.','error');
+    done();
   });
 }
 
-function handleCode(code){
-  if(!code||code===lastScanned)return;
-  lastScanned=code;
-  if(navigator.vibrate)navigator.vibrate([80]);
-  document.getElementById('searchInput').value=code;
-  lookupBarcode(code);
-  setTimeout(function(){lastScanned='';},2500);
-}
-
-function cameraErr(err){
-  var m=String(err.message||err);
-  if(/denied|NotAllowed|permission/i.test(m))
-    setStatus('❌ Camera blocked — Settings → Safari → Camera → Allow','error');
-  else setStatus('❌ Camera error: '+m,'error');
-  stopScanner();
-}
-
-function stopScanner(){
-  scannerRunning=false;
-  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
-  if(scanStream){scanStream.getTracks().forEach(function(t){t.stop();});scanStream=null;}
-  var v=document.getElementById('scanVideo');if(v)v.srcObject=null;
-  scanCanvas=null;scanCtx=null;
-  document.getElementById('scannerWrap').classList.add('hidden');
-  document.getElementById('cameraBtn').classList.remove('hidden');
-  document.getElementById('stopBtn').classList.add('hidden');
-}
-
+/* Lookup */
 function lookupBarcode(code){
   var bc=(code||document.getElementById('searchInput').value).trim();if(!bc)return;
-  var key=null;Object.keys(products).forEach(function(k){if(k===bc||k.replace(/\s/g,'')===bc.replace(/\s/g,''))key=k;});
-  if(!key){setStatus('❌ Part Number not found: '+bc,'error');pendingProduct=null;document.getElementById('pLabel').textContent='Not found';document.getElementById('pName').innerHTML='&nbsp;';document.getElementById('pMeta').innerHTML='';document.getElementById('addBtn').disabled=true;return;}
+  var key=null;
+  Object.keys(products).forEach(function(k){if(k===bc||k.replace(/\s/g,'')===bc.replace(/\s/g,''))key=k;});
+  if(!key){
+    setStatus('❌ Part Number not found: '+bc,'error');pendingProduct=null;
+    document.getElementById('pLabel').textContent='Not found';document.getElementById('pName').innerHTML='&nbsp;';
+    document.getElementById('pMeta').innerHTML='';document.getElementById('addBtn').disabled=true;return;
+  }
   pendingProduct=JSON.parse(JSON.stringify(products[key]));
   document.getElementById('pLabel').textContent='Part No: '+pendingProduct.partNo;
   document.getElementById('pName').textContent=pendingProduct.product;
@@ -462,7 +472,6 @@ function lookupBarcode(code){
   if(pendingProduct.under)tags+='<span class="p-tag">🏷️ '+pendingProduct.under+'</span>';
   if(pendingProduct.alias)tags+='<span class="p-tag">📌 '+pendingProduct.alias+'</span>';
   if(pendingProduct.mrp)tags+='<span class="p-tag">₹ MRP: '+parseFloat(pendingProduct.mrp||0).toLocaleString('en-IN')+'</span>';
-  if(pendingProduct.vchNo)tags+='<span class="p-tag">Vch: '+pendingProduct.vchNo+'</span>';
   document.getElementById('pMeta').innerHTML=tags;
   document.getElementById('pickQty').value=1;document.getElementById('addBtn').disabled=false;
   setStatus('✅ "'+pendingProduct.product+'" found — set qty and press Add','ok');
@@ -493,7 +502,7 @@ function renderTable(){
   document.getElementById('tableBody').innerHTML=html;
 }
 
-/* ══ NUMBER TO WORDS (Indian) ══ */
+/* ══ NUMBER TO WORDS ══ */
 function numToWords(n){
   var a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
   var b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
@@ -502,39 +511,29 @@ function numToWords(n){
   if(intN>=10000000){res+=h(Math.floor(intN/10000000))+'Crore ';intN%=10000000;}
   if(intN>=100000){res+=h(Math.floor(intN/100000))+'Lakh ';intN%=100000;}
   if(intN>=1000){res+=h(Math.floor(intN/1000))+'Thousand ';intN%=1000;}
-  if(intN>0)res+=h(intN);
-  res=res.trim();if(dec>0)res+=' and '+h(dec).trim()+' Paise';
+  if(intN>0)res+=h(intN);res=res.trim();
+  if(dec>0)res+=' and '+h(dec).trim()+' Paise';
   return res.trim()||'Zero';
 }
 
-/* ══ PDF — Invoice Style ══ */
+/* ══ PDF ══ */
 function generatePDF(){
   if(!scannedItems.length){alert('No items to export!');return;}
   var raw=document.getElementById('returnDate').value||new Date().toISOString().split('T')[0];
   var p=raw.split('-'),date=p[2]+'-'+p[1]+'-'+p[0];
   var salesPerson=document.getElementById('salesName').value.trim()||'N/A';
+  var dcNumber=document.getElementById('dcNumber').value.trim()||'—';
   var partyName=document.getElementById('partyName').value.trim()||'';
   var partyAddr=document.getElementById('partyAddress').value.trim()||'';
-
-  var dcNumber=document.getElementById('dcNumber').value.trim()||'—';
   var doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
   var lm=7,pw=196,cx=lm;
   doc.setDrawColor(0);doc.setLineWidth(0.25);
   var y=7;
-
-  /* 1. PARTY NAME (above title) */
   doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(0,0,0);
-  doc.text('Expert Corporate Solutions',cx+pw/2,y+5,{align:'center'});
-  y+=9;
-
-  /* 2. TITLE BAR */
-  doc.setFillColor(102,126,234);
-  doc.rect(cx,y,pw,9,'F');
+  doc.text('Expert Corporate Solutions',cx+pw/2,y+5,{align:'center'});y+=9;
+  doc.setFillColor(102,126,234);doc.rect(cx,y,pw,9,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(255,255,255);
-  doc.text('SAMPLE RETURN FORM',cx+pw/2,y+6.2,{align:'center'});
-  y+=9;
-
-  /* 3. COMPANY HEADER */
+  doc.text('SAMPLE RETURN FORM',cx+pw/2,y+6.2,{align:'center'});y+=9;
   var hH=46,split=cx+pw*0.60;
   doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(0,0,0);
   doc.text('Expert Corporate Solutions',cx+3,y+6);
@@ -543,55 +542,42 @@ function generatePDF(){
   var iy=y+11;ci.forEach(function(l){doc.text(l,cx+3,iy);iy+=4.5;});
   doc.setLineWidth(0.3);doc.line(split,y,split,y+hH);
   var rx=split+3,rMid=split+(cx+pw-split)/2;
-  doc.setFontSize(7.5);doc.setTextColor(90,90,90);
-  doc.text('Original DC Number',rx,y+5);doc.text('Dated',rMid,y+5);
-  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);
-  doc.text(dcNumber,rx,y+10);doc.text(date,rMid,y+10);
+  doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Original DC Number',rx,y+5);doc.text('Dated',rMid,y+5);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(dcNumber,rx,y+10);doc.text(date,rMid,y+10);
   doc.setLineWidth(0.2);doc.line(split,y+13,cx+pw,y+13);
   doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Sales Person',rx,y+18);
   doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(salesPerson,rx,y+24);
-  doc.setLineWidth(0.3);doc.rect(cx,y,pw,hH);
-  y+=hH;
-
-  /* 4. PARTY */
+  doc.setLineWidth(0.3);doc.rect(cx,y,pw,hH);y+=hH;
   var pH=30;doc.rect(cx,y,pw,pH);
-  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);  doc.text('Party',cx+3,y+5);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Party',cx+3,y+5);
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(0,0,0);doc.text(partyName||'N/A',cx+3,y+11);
   if(partyAddr){doc.setFont('helvetica','normal');doc.setFontSize(8.5);var al=partyAddr.split('\n'),ay=y+17;al.forEach(function(l){if(l.trim()){doc.text(l.trim(),cx+3,ay);ay+=4.5;}});}
   y+=pH;
-
-  /* 5. ITEMS TABLE */
   var tQ=0,tAmt=0;
   var rows=scannedItems.map(function(it,i){
-    var q=parseInt(it.returnQty)||1,m=parseFloat(it.mrp)||0,amt=q*m;
-    tQ+=q;tAmt+=amt;
-    return[{content:String(i+1),styles:{halign:'center'}},it.product+(it.alias?'\n('+it.alias+')':''),it.under,it.partNo,{content:q+' nos',styles:{halign:'center'}},{content:'₹'+m.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}},{content:'₹'+amt.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}}];
+    var q=parseInt(it.returnQty)||1,m=parseFloat(it.mrp)||0,amt=q*m;tQ+=q;tAmt+=amt;
+    return[{content:String(i+1),styles:{halign:'center'}},it.product+(it.alias?'\n('+it.alias+')':''),it.under,it.partNo,
+      {content:q+' nos',styles:{halign:'center'}},
+      {content:'₹'+m.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}},
+      {content:'₹'+amt.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right'}}];
   });
   rows.push([{content:'',colSpan:4,styles:{fillColor:[230,235,245]}},{content:tQ+' nos',styles:{halign:'center',fontStyle:'bold',fillColor:[230,235,245]}},{content:'Total',styles:{halign:'right',fontStyle:'bold',fillColor:[230,235,245]}},{content:'₹'+tAmt.toLocaleString('en-IN',{minimumFractionDigits:2}),styles:{halign:'right',fontStyle:'bold',fillColor:[230,235,245]}}]);
-  doc.autoTable({startY:y,
-    head:[[{content:'Sl\nNo.',styles:{halign:'center',cellWidth:9}},{content:'Description of Goods',styles:{cellWidth:57}},{content:'Under / Brand',styles:{cellWidth:28}},{content:'Part No.',styles:{cellWidth:27}},{content:'Quantity',styles:{halign:'center',cellWidth:22}},{content:'Rate (MRP)',styles:{halign:'right',cellWidth:26}},{content:'Amount',styles:{halign:'right',cellWidth:27}}]],
+  doc.autoTable({startY:y,head:[[{content:'Sl\nNo.',styles:{halign:'center',cellWidth:9}},{content:'Description of Goods',styles:{cellWidth:57}},{content:'Under / Brand',styles:{cellWidth:28}},{content:'Part No.',styles:{cellWidth:27}},{content:'Quantity',styles:{halign:'center',cellWidth:22}},{content:'Rate (MRP)',styles:{halign:'right',cellWidth:26}},{content:'Amount',styles:{halign:'right',cellWidth:27}}]],
     body:rows,theme:'grid',margin:{left:lm,right:lm},
     styles:{fontSize:8.5,cellPadding:{top:3,bottom:3,left:2,right:2},textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2},
-    headStyles:{fillColor:[102,126,234],textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,lineColor:[0,0,0],lineWidth:0.25}
-  });
+    headStyles:{fillColor:[102,126,234],textColor:[255,255,255],fontStyle:'bold',fontSize:8.5}});
   y=doc.lastAutoTable.finalY;
-
-  /* 6. AMOUNT IN WORDS */
   var wH=12;doc.rect(cx,y,pw,wH);
   doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('Amount Chargeable (in words)',cx+3,y+4.5);
   doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(0,0,0);doc.text('INR '+numToWords(tAmt)+' Only',cx+3,y+9.5);
-  doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('E. & O.E',cx+pw-3,y+9.5,{align:'right'});
-  y+=wH;
-
-  /* 7. SIGNATURE */
+  doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(90,90,90);doc.text('E. & O.E',cx+pw-3,y+9.5,{align:'right'});y+=wH;
   var sH=28,sSplit=cx+pw*0.55;
   doc.rect(cx,y,pw*0.55,sH);doc.rect(sSplit,y,pw*0.45,sH);
   doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(0,0,0);
   doc.text("Customer's Seal and Signature",cx+3,y+5);
   doc.text('for EXPERT CORPORATE SOLUTIONS',sSplit+3,y+5);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(60,60,60);doc.text('Authorised Signatory',cx+pw-3,y+sH-4,{align:'right'});
-  y+=sH;
-
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(60,60,60);
+  doc.text('Authorised Signatory',cx+pw-3,y+sH-4,{align:'right'});
   doc.save('Sample_Return_'+date+'.pdf');
   setStatus('✅ PDF downloaded!','ok');
 }
