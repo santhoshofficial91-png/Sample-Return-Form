@@ -348,27 +348,51 @@ function startScanner(){
 }
 
 function startDecoding(video){
-  if('BarcodeDetector' in window){
-    var det=new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']});
-    scanInterval=setInterval(function(){
-      if(!video.videoWidth)return;
-      det.detect(video).then(function(bc){if(bc.length)onCodeFound(bc[0].rawValue);}).catch(function(){});
-    },300);
-  }else if(window.Quagga){
-    scanInterval=setInterval(function(){
-      if(!video.videoWidth)return;
-      scanCanvas.width=video.videoWidth;scanCanvas.height=video.videoHeight;
-      scanCtx.drawImage(video,0,0);
+  var useNative='BarcodeDetector' in window;
+  var det=useNative?new BarcodeDetector({
+    formats:['ean_13','ean_8','code_128','code_39','code_93','upc_a','upc_e','itf','qr_code','codabar','data_matrix','pdf417']
+  }):null;
+
+  scanInterval=setInterval(function(){
+    if(!video.videoWidth||!video.videoHeight)return;
+
+    /* ── Crop to the scan zone only ──
+       Zone is 270px wide, 200px tall, centred at 50% / 42% of the modal.
+       Map that to video pixel coordinates. */
+    var vw=video.videoWidth, vh=video.videoHeight;
+    // crop 70% width, 40% height centred horizontally, 30-70% vertically
+    var cw=Math.floor(vw*0.70), ch=Math.floor(vh*0.42);
+    var cx=Math.floor((vw-cw)/2);
+    var cy=Math.floor(vh*0.25); // upper edge of scan zone in video
+    scanCanvas.width=cw; scanCanvas.height=ch;
+    scanCtx.drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
+
+    if(useNative){
+      det.detect(scanCanvas).then(function(bc){
+        if(bc.length)onCodeFound(bc[0].rawValue);
+      }).catch(function(){});
+    } else if(window.Quagga){
       try{
         Quagga.decodeSingle({
-          src:scanCanvas.toDataURL('image/jpeg',0.85),numOfWorkers:0,inputStream:{size:800},
-          locator:{patchSize:'medium',halfSample:true},
-          decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
+          src:scanCanvas.toDataURL('image/jpeg',0.92),
+          numOfWorkers:0,
+          inputStream:{size:640},
+          locator:{patchSize:'medium',halfSample:false},
+          decoder:{
+            readers:[
+              'code_128_reader','code_39_reader','code_93_reader',
+              'ean_reader','ean_8_reader',
+              'upc_reader','upc_e_reader',
+              'i2of5_reader','codabar_reader'
+            ]
+          },
           locate:true
-        },function(r){if(r&&r.codeResult&&r.codeResult.code)onCodeFound(r.codeResult.code);});
+        },function(r){
+          if(r&&r.codeResult&&r.codeResult.code)onCodeFound(r.codeResult.code);
+        });
       }catch(e){}
-    },600);
-  }
+    }
+  },400); // 400ms — fast enough without hammering CPU
 }
 
 function onCodeFound(code){
