@@ -34,14 +34,27 @@
     @media(max-width:600px){.row2{grid-template-columns:1fr;}}
     label{display:block;margin-bottom:6px;opacity:.8;font-size:.88rem;}
     .hidden{display:none!important;}
-    .scanner-wrap{position:relative;background:#000;border-radius:10px;overflow:hidden;height:280px;margin:12px 0;}
-    .scanner-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
-    .scan-line{position:absolute;left:8%;width:84%;height:2px;background:rgba(102,126,234,.95);box-shadow:0 0 8px #667eea,0 0 20px #667eea;animation:scanMove 2s ease-in-out infinite;pointer-events:none;z-index:2;}
-    @keyframes scanMove{0%,100%{top:18%;}50%{top:82%;}}
-    .sc{position:absolute;width:22px;height:22px;border-color:rgba(102,126,234,.95);border-style:solid;z-index:2;}
-    .tl{top:10px;left:10px;border-width:3px 0 0 3px;} .tr{top:10px;right:10px;border-width:3px 3px 0 0;}
-    .bl{bottom:10px;left:10px;border-width:0 0 3px 3px;} .br{bottom:10px;right:10px;border-width:0 3px 3px 0;}
-    .scan-badge{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#c7d2fe;font-size:.75rem;padding:4px 12px;border-radius:20px;z-index:2;white-space:nowrap;}
+    .scanner-wrap{position:relative;background:#000;border-radius:14px;overflow:hidden;height:320px;margin:12px 0;}
+    .scanner-wrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-transform:translateZ(0);transform:translateZ(0);}
+    /* dark overlay around scan zone */
+    .scan-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;
+      background:linear-gradient(rgba(0,0,0,.5) 0%,transparent 25%,transparent 75%,rgba(0,0,0,.5) 100%),
+                 linear-gradient(90deg,rgba(0,0,0,.5) 0%,transparent 15%,transparent 85%,rgba(0,0,0,.5) 100%);}
+    .scan-zone{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:75%;height:110px;border:2px solid rgba(102,126,234,.9);border-radius:6px;z-index:3;pointer-events:none;}
+    /* corner accents */
+    .sc{position:absolute;width:18px;height:18px;border-color:#667eea;border-style:solid;z-index:4;}
+    .tl{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:3px 0 0 0;}
+    .tr{top:-2px;right:-2px;border-width:3px 3px 0 0;border-radius:0 3px 0 0;}
+    .bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;border-radius:0 0 0 3px;}
+    .br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 3px 0;}
+    /* scan line inside zone */
+    .scan-line{position:absolute;left:0;right:0;height:2px;background:rgba(102,126,234,.95);
+      box-shadow:0 0 6px #667eea,0 0 14px #667eea;animation:scanMove 1.8s ease-in-out infinite;z-index:4;}
+    @keyframes scanMove{0%,100%{top:4px;}50%{bottom:4px;top:calc(100% - 6px);}}
+    .scan-badge{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.6);color:#c7d2fe;font-size:.78rem;padding:5px 14px;
+      border-radius:20px;z-index:5;white-space:nowrap;letter-spacing:.3px;}
     .barcode-row{display:flex;gap:10px;margin-bottom:16px;} .barcode-row input{flex:1;}
     .picker-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 18px;}
     .p-name{font-size:1rem;font-weight:700;color:#c7d2fe;margin-bottom:8px;min-height:20px;}
@@ -113,7 +126,7 @@
   <!-- Scanner -->
   <div class="card">
     <h3>📷 Scan Part Number</h3>
-    <!-- iOS: photo capture (works inside iframe) -->
+    <!-- iOS fallback file input -->
     <input type="file" id="iosCapture" accept="image/*" capture="environment"
            style="display:none" onchange="processIOSCapture(this)">
 
@@ -121,21 +134,19 @@
       <button class="btn btn-primary" id="cameraBtn" onclick="startScanner()">📷 Start Camera</button>
       <button class="btn btn-danger hidden" id="stopBtn" onclick="stopScanner()">⛔ Stop</button>
     </div>
-    <div id="iosTip" class="hidden"
-         style="background:rgba(102,126,234,.2);border:1px solid rgba(102,126,234,.5);border-radius:10px;padding:12px 14px;font-size:.85rem;margin-bottom:10px;line-height:1.6;">
-      📱 <b>iPhone tip:</b> Hold the barcode close, fill the frame, good lighting.<br>
-      After photo is taken it will auto-scan.
-    </div>
     <div id="iosScanStatus" class="hidden"
          style="text-align:center;padding:14px;background:rgba(255,255,255,.08);border-radius:10px;margin:10px 0;font-size:.9rem;">
-      ⏳ Processing barcode…
+      ⏳ Reading barcode…
     </div>
     <div id="scannerWrap" class="scanner-wrap hidden">
-      <video id="scanVideo" playsinline autoplay muted></video>
-      <div class="scan-line"></div>
-      <div class="sc tl"></div><div class="sc tr"></div>
-      <div class="sc bl"></div><div class="sc br"></div>
-      <div class="scan-badge" id="scanBadge">🔍 Scanning…</div>
+      <video id="scanVideo" playsinline webkit-playsinline autoplay muted></video>
+      <div class="scan-overlay"></div>
+      <div class="scan-zone">
+        <div class="sc tl"></div><div class="sc tr"></div>
+        <div class="sc bl"></div><div class="sc br"></div>
+        <div class="scan-line"></div>
+      </div>
+      <div class="scan-badge" id="scanBadge">🔍 Align barcode inside the box</div>
     </div>
   </div>
 
@@ -376,6 +387,42 @@ function tryQuagga(canvas,done){
   });
 }
 
+function processIOSCapture(input){
+  if(!input.files||!input.files[0])return;
+  document.getElementById('iosScanStatus').classList.remove('hidden');
+  setStatus('⏳ Reading barcode…','loading');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var MAX=1200, ratio=Math.min(1,MAX/Math.max(img.width,img.height));
+      canvas.width=Math.floor(img.width*ratio); canvas.height=Math.floor(img.height*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      function done(){document.getElementById('iosScanStatus').classList.add('hidden');input.value='';}
+      if('BarcodeDetector' in window){
+        new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','qr_code']})
+        .detect(canvas).then(function(bc){
+          if(bc.length){handleCode(bc[0].rawValue);done();}else quaggaPhoto(canvas,done);
+        }).catch(function(){quaggaPhoto(canvas,done);});
+      } else { quaggaPhoto(canvas,done); }
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function quaggaPhoto(canvas,done){
+  if(!window.Quagga){setStatus('❌ Type Part Number manually.','error');done();return;}
+  Quagga.decodeSingle({src:canvas.toDataURL('image/jpeg',0.95),numOfWorkers:0,inputStream:{size:1200},
+    locator:{patchSize:'large',halfSample:false},
+    decoder:{readers:['code_128_reader','ean_reader','ean_8_reader','code_39_reader','upc_reader','upc_e_reader']},
+    locate:true},function(r){
+    if(r&&r.codeResult&&r.codeResult.code){handleCode(r.codeResult.code);done();}
+    else{setStatus('❌ Not detected. Try again closer to the barcode.','error');done();}
+  });
+}
+
 function handleCode(code){
   if(!code||code===lastScanned)return;
   lastScanned=code;
@@ -388,7 +435,7 @@ function handleCode(code){
 function cameraErr(err){
   var m=String(err.message||err);
   if(/denied|NotAllowed|permission/i.test(m))
-    setStatus('❌ Camera blocked. Go to Settings → Safari → Camera → Allow','error');
+    setStatus('❌ Camera blocked — Settings → Safari → Camera → Allow','error');
   else setStatus('❌ Camera error: '+m,'error');
   stopScanner();
 }
